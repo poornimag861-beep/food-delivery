@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foodie Express</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{ background:#f8f9fa; }
+
+.navbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:20px 8%;
+    background:#ff4d4d;
+    color:white;
+}
+
+.nav-links a{
+    color:white;
+    text-decoration:none;
+    margin-left:20px;
+}
+
+.cart{
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.search-bar {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 0 5%;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 12px 15px;
+    border: none;
+    border-radius: 25px;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    font-size: 14px;
+}
+
+.filters {
+    display: flex;
+    gap: 10px;
+    margin: 20px 5% 30px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    border: 2px solid #ddd;
+    background: white;
+    border-radius: 20px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.filter-btn.active {
+    background: #ff4d4d;
+    color: white;
+    border-color: #ff4d4d;
+}
+
+.hero{
+    height:60vh;
+    background:linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6)),
+    url('https://images.unsplash.com/photo-1600891964599-f61ba0e24092');
+    background-size:cover;
+    background-position:center;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:white;
+    font-size:35px;
+}
+
+.food-section{ padding:60px 8%; }
+
+.food-container{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:25px;
+}
+
+.food-card{
+    background:white;
+    border-radius:15px;
+    overflow:hidden;
+    box-shadow:0 5px 15px rgba(0,0,0,0.1);
+    transition:0.3s;
+}
+
+.food-card:hover{ transform:translateY(-8px); }
+
+.food-card img{
+    width:100%;
+    height:200px;
+    object-fit:cover;
+}
+
+.content{ padding:20px; }
+
+.price{ color:#ff4d4d; font-weight:bold; }
+
+.order-btn{
+    margin-top:10px;
+    padding:8px 15px;
+    background:#ff4d4d;
+    color:white;
+    border:none;
+    border-radius:20px;
+    cursor:pointer;
+}
+
+.cart-popup{
+    position:fixed;
+    right:20px;
+    top:80px;
+    width:250px;
+    background:white;
+    padding:15px;
+    border-radius:10px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.2);
+    display:none;
+}
+
+.cart-popup h3{ margin-bottom:10px; }
+
+.cart-popup ul{ list-style:none; padding:0; margin:0; }
+.cart-popup li{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.cart-popup img{ width:48px; height:48px; object-fit:cover; border-radius:8px; }
+.cart-popup .item-name{ flex:1; }
+.remove-btn{ background:#ff6b6b; color:white; border:none; padding:6px 8px; border-radius:6px; cursor:pointer; font-size:12px; }
+
+footer{
+    text-align:center;
+    padding:20px;
+    background:#333;
+    color:white;
+    margin-top:40px;
+}
+
+</style>
+</head>
+<body>
+
+<div class="navbar">
+    <h2 style="cursor: pointer;" onclick="location.href='index.html'">🍔 FoodieExpress</h2>
+    <div style="display: flex; gap: 15px; align-items: center;">
+        <span id="user-name" style="font-weight: 600; color: white;"></span>
+        <button onclick="location.href='home.html'" style="background: transparent; color: white; border: none; cursor: pointer; font-weight: 600;">🏠 Home</button>
+        <button onclick="location.href='profile.html'" style="background: transparent; color: white; border: none; cursor: pointer; font-weight: 600;">👤 Profile</button>
+        <button onclick="location.href='settings.html'" style="background: transparent; color: white; border: none; cursor: pointer; font-weight: 600;">⚙️ Settings</button>
+        <button onclick="toggleCart()" style="background: white; color: #ff4d4d; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: 600;">🛒 Cart (<span id="cart-count">0</span>)</button>
+        <button onclick="logout()" style="background: #ff6b6b; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: 600;">🚪 Logout</button>
+    </div>
+</div>
+
+<section class="hero">
+    Delicious Food Delivered Fast
+</section>
+
+<div class="search-bar">
+    <input type="text" id="search-input" placeholder="Search food items...">
+</div>
+
+<div class="filters">
+    <button class="filter-btn active" onclick="filterByCategory(this, 'All')">All Items</button>
+    <button class="filter-btn" onclick="filterByCategory(this, 'Burger')">🍔 Burgers</button>
+    <button class="filter-btn" onclick="filterByCategory(this, 'Pizza')">🍕 Pizzas</button>
+    <button class="filter-btn" onclick="filterByCategory(this, 'Salad')">🥗 Salads</button>
+    <button class="filter-btn" onclick="filterByCategory(this, 'Biryani')">🍜 Biryani</button>
+    <button class="filter-btn" onclick="filterByCategory(this, 'Drinks')">🥤 Drinks</button>
+    <button class="filter-btn" onclick="filterByCategory(this, 'Desserts')">🍰 Desserts</button>
+</div>
+
+<section class="food-section">
+    <div class="food-container">
+
+        <div class="food-card">
+            <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd">
+            <div class="content">
+                <h3>Burger</h3>
+                <p class="price">$8.99</p>
+                <button class="order-btn" onclick="addToCart('Burger')">Add to Cart</button>
+            </div>
+        </div>
+
+        <div class="food-card">
+            <img src="https://images.unsplash.com/photo-1671106681075-5a7233268cbd?q=80&w=734&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+            <div class="content">
+                <h3>Pizza</h3>
+                <p class="price">$12.49</p>
+                <button class="order-btn" onclick="addToCart('Pizza')">Add to Cart</button>
+            </div>
+        </div>
+
+        <div class="food-card">
+            <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c">
+            <div class="content">
+                <h3>Salad</h3>
+                <p class="price">$6.99</p>
+                <button class="order-btn" onclick="addToCart('Salad')">Add to Cart</button>
+            </div>
+        </div>
+
+        <div class="food-card">
+            <img src="https://plus.unsplash.com/premium_photo-1661419883163-bb4df1c10109?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+            <div class="content">
+                <h3>Grilled Chicken Bowl</h3>
+                <p class="price">$10.99</p>
+                <button class="order-btn" onclick="addToCart('Chicken Bowl')">Add to Cart</button>
+            </div>
+        </div>
+
+        <div class="food-card">
+            <img src="https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?q=80&w=888&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+            <div class="content">
+                <h3>Biryani</h3>
+                <p class="price">$11.99</p>
+                <button class="order-btn" onclick="addToCart('Biryani')">Add to Cart</button>
+            </div>
+        </div>
+
+        <div class="food-card">
+            <img src="https://images.unsplash.com/photo-1606149059549-6042addafc5a?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+            <div class="content">
+                <h3>Chicken Burger</h3>
+                <p class="price">$9.49</p>
+                <button class="order-btn" onclick="addToCart('Chicken Burger')">Add to Cart</button>
+            </div>
+        </div>
+
+        <div class="food-card">
+            <img src="https://plus.unsplash.com/premium_photo-1684952849219-5a0d76012ed2?q=80&w=1032&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+            <div class="content">
+                <h3>Cool Drinks</h3>
+                <p class="price">$2.49</p>
+                <button class="order-btn" onclick="addToCart('Cool Drinks')">Add to Cart</button>
+            </div>
+        </div>
+
+        <div class="food-card">
+            <img src="https://images.unsplash.com/photo-1598679253544-2c97992403ea?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+            <div class="content">
+                <h3>Fries</h3>
+                <p class="price">$3.49</p>
+                <button class="order-btn" onclick="addToCart('Fries')">Add to Cart</button>
+            </div>
+        </div>
+
+        <div class="food-card">
+            <img src="https://images.unsplash.com/photo-1622715395486-08183374570a?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+            <div class="content">
+                <h3>Samosa</h3>
+                <p class="price">$1.99</p>
+                <button class="order-btn" onclick="addToCart('Samosa')">Add to Cart</button>
+            </div>
+        </div>
+
+        <div class="food-card">
+            <img src="https://images.unsplash.com/photo-1580915411954-282cb1b0d780?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+            <div class="content">
+                <h3>Ice Cream</h3>
+                <p class="price">$4.29</p>
+                <button class="order-btn" onclick="addToCart('Ice Cream')">Add to Cart</button>
+            </div>
+        </div>
+
+        <div class="food-card">
+            <img src="https://plus.unsplash.com/premium_photo-1705420671923-cc9270c18b34?q=80&w=871&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+            <div class="content">
+                <h3>Pasta</h3>
+                <p class="price">$9.99</p>
+                <button class="order-btn" onclick="addToCart('Pasta')">Add to Cart</button>
+            </div>
+        </div>
+
+        <div class="food-card">
+            <img src="https://images.unsplash.com/photo-1726824863833-e88146cf0a72?q=80&w=869&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+            <div class="content">
+                <h3>Sushi</h3>
+                <p class="price">$13.49</p>
+                <button class="order-btn" onclick="addToCart('Sushi')">Add to Cart</button>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<div class="cart-popup" id="cartPopup">
+    <h3>Your Cart</h3>
+    <ul id="cart-items"></ul>
+</div>
+
+<footer>
+    © 2026 FoodieExpress
+</footer>
+
+<script>
+
+let cart = [];
+
+function addToCart(item){
+    // find the image src for this item from the corresponding card
+    let imgSrc = "";
+    document.querySelectorAll('.food-card').forEach(card => {
+        const titleEl = card.querySelector('.content h3');
+        if(titleEl && titleEl.innerText.trim() === item){
+            const imgEl = card.querySelector('img');
+            if(imgEl) imgSrc = imgEl.src;
+        }
+    });
+
+    cart.push({ name: item, img: imgSrc });
+    document.getElementById('cart-count').innerText = cart.length;
+    renderCartItems();
+}
+
+function renderCartItems(){
+    const ul = document.getElementById('cart-items');
+    ul.innerHTML = '';
+    cart.forEach((c, idx) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<img src="${c.img}" alt="${c.name}"><span class="item-name">${c.name}</span><button class="remove-btn" data-index="${idx}">Remove</button>`;
+        ul.appendChild(li);
+    });
+
+    // attach remove handlers
+    ul.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const i = parseInt(e.target.getAttribute('data-index'));
+            if(!isNaN(i)){
+                cart.splice(i, 1);
+                document.getElementById('cart-count').innerText = cart.length;
+                renderCartItems();
+            }
+        });
+    });
+}
+
+function toggleCart(){
+    let popup = document.getElementById('cartPopup');
+    popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
+}
+
+function filterByCategory(btn, category) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentCategory = category;
+    displayFilteredItems();
+}
+
+function displayFilteredItems() {
+    const cards = document.querySelectorAll('.food-card');
+    cards.forEach(card => {
+        const itemName = card.querySelector('.content h3').innerText;
+        let shouldShow = false;
+
+        if (currentCategory === 'All') {
+            shouldShow = true;
+        } else {
+            const categoryItems = foodCategories[currentCategory] || [];
+            shouldShow = categoryItems.some(item => itemName.includes(item));
+        }
+
+        card.style.display = shouldShow ? 'block' : 'none';
+    });
+}
+
+function logout() {
+    if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = 'login.html';
+    }
+}
+
+let currentCategory = 'All';
+const foodCategories = {
+    'Burger': ['Burger', 'Chicken Burger'],
+    'Pizza': ['Pizza'],
+    'Salad': ['Salad'],
+    'Biryani': ['Biryani'],
+    'Drinks': ['Cool Drinks'],
+    'Desserts': ['Ice Cream']
+};
+
+document.getElementById('search-input').addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase();
+    const cards = document.querySelectorAll('.food-card');
+    cards.forEach(card => {
+        const itemName = card.querySelector('.content h3').innerText.toLowerCase();
+        const categoryMatch = currentCategory === 'All' || 
+            Object.values(foodCategories[currentCategory] || []).some(item => 
+                card.querySelector('.content h3').innerText.includes(item)
+            );
+        const nameMatch = itemName.includes(query);
+        card.style.display = (nameMatch && categoryMatch) ? 'block' : 'none';
+    });
+});
+
+window.addEventListener('load', () => {
+    const user = localStorage.getItem('user') || 'Guest';
+    document.getElementById('user-name').innerText = `Hello, ${user}`;
+});
+
+</script>
+
+</body>
+</html>
